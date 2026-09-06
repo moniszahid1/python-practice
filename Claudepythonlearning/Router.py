@@ -10,8 +10,12 @@ class Router:
             return "Normal"
         else:
             return "UnderUtilized"
+    def update_cpu(self, new_value):
+        self.connected_device=new_value
 
 r1=Router("edge01",65)
 r2=Router("branch01",12)
 print(f"Router {r1.hostname} capacity is {r1.check_capacity()}")
 print(f"Router  {r2.hostname} capacity is {r2.check_capacity()}")
+r1.update_cpu(30)
+print(f"updated Router  {r1.hostname} capacity is {r1.check_capacity()}")
