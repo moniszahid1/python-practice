@@ -8,7 +8,7 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Build DockersImage') {
             steps {
                 dir('Claudepythonlearning/login-app') {
                     bat 'docker build -t login-app:latest .'
