@@ -1,0 +1,50 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                dir('Claudepythonlearning/login-app') {
+                    bat 'docker build -t login-app:latest .'
+                }
+            }
+        }
+
+        stage('Load Image into Minikube') {
+            steps {
+                bat 'minikube image load login-app:latest'
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                dir('Claudepythonlearning/login-app') {
+                    bat 'kubectl apply -f deployment.yaml'
+                    bat 'kubectl apply -f service.yaml'
+                }
+            }
+        }
+
+        stage('Restart Deployment') {
+            steps {
+                bat 'kubectl rollout restart deployment/login-app'
+                bat 'kubectl rollout status deployment/login-app --timeout=120s'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Deployment successful!'
+        }
+        failure {
+            echo 'Pipeline failed - check logs above.'
+        }
+    }
+}

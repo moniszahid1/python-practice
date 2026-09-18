@@ -2,7 +2,7 @@ from flask import Flask, request
 appnew=Flask(__name__)
 @appnew.route("/")
 def home():
-    return{"Welcome to my first API"}
+    return"Welcome to my first API"
 @appnew.route("/status")
 def status():
     return{"Server":"web","status":"running"}
