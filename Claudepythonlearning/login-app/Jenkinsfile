@@ -1,32 +1,80 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER = 'C:\\Program Files\\Docker\\Docker\\resources\\bin\\docker.exe'
+        KUBECTL = 'C:\\Program Files\\Docker\\Docker\\resources\\bin\\kubectl.exe'
+        MINIKUBE = 'C:\\Program Files\\Kubernetes\\Minikube\\minikube.exe'
+    }
+
     stages {
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
                 checkout scm
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Install Dependencies') {
             steps {
-                bat 'docker build -t login-app:latest ./Claudepythonlearning/login-app'
+                dir('Claudepythonlearning/login-app') {
+                    bat 'pip install -r requirements.txt'
+                }
             }
         }
 
-        stage('Load Image to Minikube') {
+        stage('Lint') {
             steps {
-                bat 'minikube image load login-app:latest'
+                dir('Claudepythonlearning/login-app') {
+                    bat 'flake8 app.py --max-line-length=120'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                dir('Claudepythonlearning/login-app') {
+                    bat 'pytest test_app.py -v'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                dir('Claudepythonlearning/login-app') {
+                    bat "\"%DOCKER%\" build -t login-app:latest ."
+                }
+            }
+        }
+
+        stage('Load Image into Minikube') {
+            steps {
+                bat "\"%MINIKUBE%\" image load login-app:latest"
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-                bat 'kubectl apply -f ./Claudepythonlearning/login-app/deployment.yaml'
-                bat 'kubectl apply -f ./Claudepythonlearning/login-app/service.yaml'
-                bat 'kubectl rollout restart deployment/login-app'
-                bat 'kubectl rollout status deployment/login-app --timeout=120s'
+                dir('Claudepythonlearning/login-app') {
+                    bat "\"%KUBECTL%\" apply -f deployment.yaml"
+                    bat "\"%KUBECTL%\" apply -f service.yaml"
+                }
             }
+        }
+
+        stage('Restart Deployment') {
+            steps {
+                bat "\"%KUBECTL%\" rollout restart deployment/login-app"
+                bat "\"%KUBECTL%\" rollout status deployment/login-app --timeout=120s"
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Deployment successful!'
+        }
+        failure {
+            echo 'Pipeline failed - check logs above.'
         }
     }
 }
