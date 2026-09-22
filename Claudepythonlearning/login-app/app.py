@@ -33,7 +33,7 @@ def login():
             # Redirect to /dashboard on success
             return redirect(url_for("dashboard"))
         else:
-            error = "Invalid username or password. Please try again."
+            error = "Access denied. Please check your credentials."
 
     return render_template("login.html", error=error)
 
