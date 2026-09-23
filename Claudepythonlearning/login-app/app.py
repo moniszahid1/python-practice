@@ -33,7 +33,7 @@ def login():
             # Redirect to /dashboard on success
             return redirect(url_for("dashboard"))
         else:
-            error = "Authentication failed. Please check your credentials and try again."
+            error = "Invalid username or password"
 
     return render_template("login.html", error=error)
 
