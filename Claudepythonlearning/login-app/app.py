@@ -27,7 +27,7 @@ def login():
         username = request.form.get("username")
         password = request.form.get("password")
 
-        if username = DEMO_USER and password == DEMO_PASS:
+        if username == DEMO_USER and password == DEMO_PASS:
             # Store authentication state in the session
             session["username"] = username
             # Redirect to /dashboard on success
