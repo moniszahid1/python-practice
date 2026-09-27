@@ -7,6 +7,10 @@ pipeline {
         MINIKUBE = 'C:\\Program Files\\Kubernetes\\Minikube\\minikube.exe'
     }
 
+    triggers {
+        pollSCM('* * * * *')
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -39,6 +43,9 @@ pipeline {
         }
 
         stage('Build Docker Image') {
+            when {
+                branch 'master'
+            }
             steps {
                 dir('Claudepythonlearning/login-app') {
                     bat "\"%DOCKER%\" build -t login-app:latest ."
@@ -47,12 +54,18 @@ pipeline {
         }
 
         stage('Load Image into Minikube') {
+            when {
+                branch 'master'
+            }
             steps {
                 bat "\"%MINIKUBE%\" image load login-app:latest"
             }
         }
 
         stage('Deploy to Kubernetes') {
+            when {
+                branch 'master'
+            }
             steps {
                 dir('Claudepythonlearning/login-app') {
                     bat "\"%KUBECTL%\" apply -f deployment.yaml"
@@ -62,6 +75,9 @@ pipeline {
         }
 
         stage('Restart Deployment') {
+            when {
+                branch 'master'
+            }
             steps {
                 bat "\"%KUBECTL%\" rollout restart deployment/login-app"
                 bat "\"%KUBECTL%\" rollout status deployment/login-app --timeout=120s"
